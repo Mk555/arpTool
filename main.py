@@ -161,6 +161,9 @@ def fwconf(args):
 # Code
 #####################################
 
+# Improve the read
+os.system("clear")
+
 saveIPConfig()
  
 # If the router is not defined -> Guess it
