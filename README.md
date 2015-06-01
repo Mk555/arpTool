@@ -1,6 +1,6 @@
 # arpTool
 
-**Script based on the python lib scapy to send arp customs arp packets. It update the iptables to redirect packets.**
+**Script based on the python lib scapy to send arp customs arp packets. It updates the iptables to redirect packets.**
 
 ## Notes
 
